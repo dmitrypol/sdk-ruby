@@ -300,7 +300,7 @@ describe AuthorizeNet::Reporting do
              <subscription>
                <id>2334316</id>
                <payNum>3</payNum>
-             </subscription>             
+             </subscription>
            </transaction>
         </transactions>
       </getTransactionListResponse>'
@@ -323,7 +323,7 @@ describe AuthorizeNet::Reporting do
       transactions[0].settle_amount.should == 38.37
       transactions[0].submitted_at.should == DateTime.parse('2010-12-07T23:50:02Z')
       transactions[0].status = 'voided'
-      transactions[2].subscription_id.should == '2334316'      
+      transactions[2].subscription_id.should == '2334316'
       customer = transactions[2].customer
       customer.nil?.should be_falsey
       customer.address.nil?.should be_falsey

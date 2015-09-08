@@ -6,13 +6,11 @@ module AuthorizeNet::API
   class ArrayOfLong < ::Array
   end
   
+
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}ArrayOfNumericString
-  class ArrayOfNumericString
+  class NumericStringsType
     include ROXML
-    xml_accessor :numericStrings, :as => [Fixnum]
-    def initialize(numericStrings = [])
-        @numericStrings = numericStrings
-    end   
+    xml_reader :numericString, :as => []
   end
   
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}ArrayOfString
@@ -185,6 +183,7 @@ module AuthorizeNet::API
   #   country - SOAP::SOAPString
   #   phoneNumber - SOAP::SOAPString
   #   faxNumber - SOAP::SOAPString
+  #   email - SOAP::SOAPString
   #   customerAddressId - (any)
   class CustomerAddressExType
     include ROXML
@@ -198,9 +197,10 @@ module AuthorizeNet::API
     xml_accessor :country
     xml_accessor :phoneNumber
     xml_accessor :faxNumber
+    xml_accessor :email
     xml_accessor :customerAddressId
   
-    def initialize(firstName = nil, lastName = nil, company = nil, address = nil, city = nil, state = nil, zip = nil, country = nil, phoneNumber = nil, faxNumber = nil, customerAddressId = nil)
+  def initialize(firstName = nil, lastName = nil, company = nil, address = nil, city = nil, state = nil, zip = nil, country = nil, phoneNumber = nil, faxNumber = nil, email = nil, customerAddressId = nil)
       @firstName = firstName
       @lastName = lastName
       @company = company
@@ -211,6 +211,7 @@ module AuthorizeNet::API
       @country = country
       @phoneNumber = phoneNumber
       @faxNumber = faxNumber
+      @email = email
       @customerAddressId = customerAddressId
     end
   end
@@ -258,37 +259,37 @@ module AuthorizeNet::API
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}creditCardSimpleType
   #   cardNumber - SOAP::SOAPString
   #   expirationDate - SOAP::SOAPString
-  #   paymentToken - SOAP::SOAPBoolean
   class CreditCardSimpleType
     include ROXML
     xml_accessor :cardNumber
     xml_accessor :expirationDate
-    xml_accessor :paymentToken
   
-    def initialize(cardNumber = nil, expirationDate = nil, paymentToken = nil)
+    def initialize(cardNumber = nil, expirationDate = nil)
       @cardNumber = cardNumber
       @expirationDate = expirationDate
-      @paymentToken = paymentToken
     end
   end
   
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}creditCardType
   #   cardNumber - SOAP::SOAPString
   #   expirationDate - SOAP::SOAPString
-  #   paymentToken - SOAP::SOAPBoolean
   #   cardCode - (any)
+  #   isPaymentToken - SOAP::SOAPBoolean
+  #   cryptogram - SOAP::SOAPString  
   class CreditCardType
     include ROXML
     xml_accessor :cardNumber
     xml_accessor :expirationDate
-    xml_accessor :paymentToken
     xml_accessor :cardCode
+    xml_accessor :isPaymentToken
+    xml_accessor :cryptogram
   
-    def initialize(cardNumber = nil, expirationDate = nil, paymentToken = nil, cardCode = nil)
+    def initialize(cardNumber = nil, expirationDate = nil, cardCode = nil, isPaymentToken = nil, cryptogram = nil)
       @cardNumber = cardNumber
       @expirationDate = expirationDate
-      @paymentToken = paymentToken
       @cardCode = cardCode
+      @isPaymentToken = isPaymentToken
+      @cryptogram = cryptogram
     end
   end
   
@@ -310,16 +311,19 @@ module AuthorizeNet::API
   #   cardNumber - SOAP::SOAPString
   #   expirationDate - SOAP::SOAPString
   #   cardType - SOAP::SOAPString
+  #   cardArt - CardArt
   class CreditCardMaskedType
     include ROXML
     xml_accessor :cardNumber
     xml_accessor :expirationDate
     xml_accessor :cardType
+    xml_accessor :cardArt
   
     def initialize(cardNumber = nil, expirationDate = nil, cardType = nil)
       @cardNumber = cardNumber
       @expirationDate = expirationDate
       @cardType = cardType
+      @cardArt = cardArt
     end
   end
   
@@ -395,31 +399,34 @@ module AuthorizeNet::API
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}opaqueDataType
   #   dataDescriptor - SOAP::SOAPString
   #   dataValue - SOAP::SOAPString
+  #   dataKey - SOAP::SOAPString
   class OpaqueDataType
     include ROXML
     xml_accessor :dataDescriptor
     xml_accessor :dataValue
+    xml_accessor :dataKey
   
-    def initialize(dataDescriptor = nil, dataValue = nil)
-      @dataDescriptor = dataDescriptor
-      @dataValue = dataValue
-    end
+  def initialize(dataDescriptor = nil, dataValue = nil, dataKey = nil)
+    @dataDescriptor = dataDescriptor
+    @dataValue = dataValue
+    @dataKey = dataKey
   end
-  
-  # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}paymentSimpleType
-  #   creditCard - CreditCardSimpleType
-  #   bankAccount - BankAccountType
-  class PaymentSimpleType
-    include ROXML
-    xml_accessor :creditCard
-    xml_accessor :bankAccount
-  
-    def initialize(creditCard = nil, bankAccount = nil)
-      @creditCard = creditCard
-      @bankAccount = bankAccount
-    end
+end
+
+# {AnetApi/xml/v1/schema/AnetApiSchema.xsd}paymentSimpleType
+#   creditCard - CreditCardSimpleType
+#   bankAccount - BankAccountType
+class PaymentSimpleType
+  include ROXML
+  xml_accessor :creditCard
+  xml_accessor :bankAccount
+
+  def initialize(creditCard = nil, bankAccount = nil)
+    @creditCard = creditCard
+    @bankAccount = bankAccount
   end
-  
+end
+
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}OperationType
   class OperationType < ::String
     DECRYPT = OperationType.new("DECRYPT")
@@ -443,8 +450,8 @@ module AuthorizeNet::API
       #   data - SOAP::SOAPString
       class Mode
         include ROXML
-        xml_accessor :pIN
-        xml_accessor :data
+        xml_accessor :PIN
+        xml_accessor :Data
   
         def initialize(pIN = nil, data = nil)
           @pIN = pIN
@@ -457,7 +464,7 @@ module AuthorizeNet::API
       #   description - SOAP::SOAPString
       class DeviceInfo
         include ROXML
-        xml_accessor :description
+        xml_accessor :Description
   
         def initialize(description = nil)
           @description = description
@@ -469,17 +476,17 @@ module AuthorizeNet::API
       #   value - SOAP::SOAPString
       class EncryptedData
         include ROXML
-        xml_accessor :value
+        xml_accessor :Value
   
         def initialize(value = nil)
           @value = value
         end
       end
   
-      xml_accessor :operation#, :as => OperationType
-      xml_accessor :mode, :as => Mode
-      xml_accessor :deviceInfo, :as => DeviceInfo
-      xml_accessor :encryptedData, :as => EncryptedData
+      xml_accessor :Operation
+      xml_accessor :Mode, :as => Mode
+      xml_accessor :DeviceInfo, :as => DeviceInfo
+      xml_accessor :EncryptedData, :as => EncryptedData
   
       def initialize(operation = nil, mode = nil, deviceInfo = nil, encryptedData = nil)
         @operation = operation
@@ -489,7 +496,7 @@ module AuthorizeNet::API
       end
     end
   
-    xml_accessor :dUKPT, :as => DUKPT
+    xml_accessor :DUKPT, :as => DUKPT
   
     def initialize(dUKPT = nil)
       @dUKPT = dUKPT
@@ -515,9 +522,9 @@ module AuthorizeNet::API
   #   scheme - KeyManagementScheme
   class KeyValue
     include ROXML
-    xml_accessor :encoding#, :as => EncodingType
-    xml_accessor :encryptionAlgorithm#, :as => EncryptionAlgorithmType
-    xml_accessor :scheme, :as => KeyManagementScheme
+    xml_accessor :Encoding
+    xml_accessor :EncryptionAlgorithm
+    xml_accessor :Scheme, :as => KeyManagementScheme
   
     def initialize(encoding = nil, encryptionAlgorithm = nil, scheme = nil)
       @encoding = encoding
@@ -530,7 +537,7 @@ module AuthorizeNet::API
   #   value - KeyValue
   class KeyBlock
     include ROXML
-    xml_accessor :value, :as => KeyValue
+    xml_accessor :Value, :as => KeyValue
   
     def initialize(value = nil)
       @value = value
@@ -541,7 +548,7 @@ module AuthorizeNet::API
   #   formOfPayment - KeyBlock
   class EncryptedTrackDataType
     include ROXML
-    xml_accessor :formOfPayment, :as => KeyBlock
+    xml_accessor :FormOfPayment, :as => KeyBlock
   
     def initialize(formOfPayment = nil)
       @formOfPayment = formOfPayment
@@ -735,16 +742,22 @@ module AuthorizeNet::API
   #   hashValue - SOAP::SOAPString
   #   sequence - SOAP::SOAPString
   #   timestamp - SOAP::SOAPString
+  #   currencyCode - SOAP::SOAPString
+  #   amount - SOAP::SOAPString
   class FingerPrintType
     include ROXML
     xml_accessor :hashValue
     xml_accessor :sequence
     xml_accessor :timestamp
-  
-    def initialize(hashValue = nil, sequence = nil, timestamp = nil)
+    xml_accessor :currencyCode
+    xml_accessor :amount
+    
+    def initialize(hashValue = nil, sequence = nil, timestamp = nil, currencyCode = nil, amount = nil)
       @hashValue = hashValue
       @sequence = sequence
       @timestamp = timestamp
+      @currencyCode = currencyCode
+      @amount = amount
     end
   end
 
@@ -777,6 +790,65 @@ module AuthorizeNet::API
     end
   end
   
+# {AnetApi/xml/v1/schema/AnetApiSchema.xsd}cardArt
+#   cardBrand - SOAP::SOAPString
+#   cardImageHeight - SOAP::SOAPString
+#   cardImageUrl - SOAP::SOAPString
+#   cardImageWidth - SOAP::SOAPString
+#   cardType - SOAP::SOAPString
+class CardArt
+  include ROXML
+  xml_accessor :cardBrand
+  xml_accessor :cardImageHeight
+  xml_accessor :cardImageUrl
+  xml_accessor :cardImageWidth
+  xml_accessor :cardType
+
+  def initialize(cardBrand = nil, cardImageHeight = nil, cardImageUrl = nil, cardImageWidth = nil, cardType = nil)
+    @cardBrand = cardBrand
+    @cardImageHeight = cardImageHeight
+    @cardImageUrl = cardImageUrl
+    @cardImageWidth = cardImageWidth
+    @cardType = cardType
+  end
+end
+# {AnetApi/xml/v1/schema/AnetApiSchema.xsd}paymentDetails
+#   currency - SOAP::SOAPString
+#   promoCode - SOAP::SOAPString
+#   misc - SOAP::SOAPString
+#   giftWrap - SOAP::SOAPString
+#   discount - SOAP::SOAPString
+#   tax - SOAP::SOAPString
+#   shippingHandling - SOAP::SOAPString
+#   subTotal - SOAP::SOAPString
+#   orderID - SOAP::SOAPString
+#   amount - SOAP::SOAPString
+class PaymentDetails
+  include ROXML
+  xml_accessor :currency
+  xml_accessor :promoCode
+  xml_accessor :misc
+  xml_accessor :giftWrap
+  xml_accessor :discount
+  xml_accessor :tax
+  xml_accessor :shippingHandling
+  xml_accessor :subTotal
+  xml_accessor :orderID
+  xml_accessor :amount
+
+  def initialize(currency = nil, promoCode = nil, misc = nil, giftWrap = nil, discount = nil, tax = nil, shippingHandling = nil, subTotal = nil, orderID = nil, amount = nil)
+    @currency = currency
+    @promoCode = promoCode
+    @misc = misc
+    @giftWrap = giftWrap
+    @discount = discount
+    @tax = tax
+    @shippingHandling = shippingHandling
+    @subTotal = subTotal
+    @orderID = orderID
+    @amount = amount
+  end
+end
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}paymentScheduleType
   #   interval - PaymentScheduleType::Interval
   #   startDate - SOAP::SOAPDate
@@ -800,7 +872,7 @@ module AuthorizeNet::API
       end
     end
   
-    xml_accessor :interval
+    xml_accessor :interval, :as => Interval
     xml_accessor :startDate
     xml_accessor :totalOccurrences
     xml_accessor :trialOccurrences
@@ -826,14 +898,14 @@ module AuthorizeNet::API
   class ARBSubscriptionType
     include ROXML
     xml_accessor :name
-    xml_accessor :paymentSchedule
+    xml_accessor :paymentSchedule, :as => PaymentScheduleType
     xml_accessor :amount
     xml_accessor :trialAmount
-    xml_accessor :payment
-    xml_accessor :order
-    xml_accessor :customer
-    xml_accessor :billTo
-    xml_accessor :shipTo
+    xml_accessor :payment, :as => PaymentType
+    xml_accessor :order, :as => OrderType
+    xml_accessor :customer, :as => CustomerType
+    xml_accessor :billTo, :as => NameAndAddressType
+    xml_accessor :shipTo, :as => NameAndAddressType
   
     def initialize(name = nil, paymentSchedule = nil, amount = nil, trialAmount = nil, payment = nil, order = nil, customer = nil, billTo = nil, shipTo = nil)
       @name = name
@@ -885,26 +957,7 @@ module AuthorizeNet::API
     end
   end
   
-  # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}fingerPrintSupportInformationType
-  #   amount - SOAP::SOAPDecimal
-  #   currencyCode - SOAP::SOAPString
-  #   sequence - SOAP::SOAPString
-  #   timestamp - SOAP::SOAPString
-  class FingerPrintSupportInformationType
-    include ROXML
-    xml_accessor :amount
-    xml_accessor :currencyCode
-    xml_accessor :sequence
-    xml_accessor :timestamp
-  
-    def initialize(amount = nil, currencyCode = nil, sequence = nil, timestamp = nil)
-      @amount = amount
-      @currencyCode = currencyCode
-      @sequence = sequence
-      @timestamp = timestamp
-    end
-  end
-    
+     
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}settingType
   #   settingName - SOAP::SOAPString
   #   settingValue - SOAP::SOAPString
@@ -1926,7 +1979,7 @@ module AuthorizeNet::API
         end
       end
       
-      xml_accessor :messages, :as => [Message]
+      xml_accessor :messages, :as => Messages
       
       def initialize(messages = [])
         @messages = messages
@@ -2120,7 +2173,7 @@ module AuthorizeNet::API
   class ANetApiResponse
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -2139,8 +2192,8 @@ module AuthorizeNet::API
     include ROXML
     xml_accessor :messages, :as => MessagesType
     xml_accessor :customerProfileId
-    xml_accessor :customerPaymentProfileIdList, :as => ArrayOfNumericString
-    xml_accessor :customerShippingAddressIdList, :as => ArrayOfNumericString
+    xml_accessor :customerPaymentProfileIdList, :as => NumericStringsType
+    xml_accessor :customerShippingAddressIdList, :as => NumericStringsType
   
     def initialize(messages = nil, customerProfileId = nil, customerPaymentProfileIdList = nil, customerShippingAddressIdList = nil)
       @messages = messages
@@ -2459,6 +2512,8 @@ module AuthorizeNet::API
     EmailCustomer = SettingNameEnum.new("emailCustomer")
     FooterEmailReceipt = SettingNameEnum.new("footerEmailReceipt")
     HeaderEmailReceipt = SettingNameEnum.new("headerEmailReceipt")
+    HostedProfileBillingAddressRequired = SettingNameEnum.new("hostedProfileBillingAddressRequired")
+    HostedProfileCardCodeRequired = SettingNameEnum.new("hostedProfileCardCodeRequired")
     HostedProfileHeadingBgColor = SettingNameEnum.new("hostedProfileHeadingBgColor")
     HostedProfileIFrameCommunicatorUrl = SettingNameEnum.new("hostedProfileIFrameCommunicatorUrl")
     HostedProfilePageBorderVisible = SettingNameEnum.new("hostedProfilePageBorderVisible")
@@ -2509,7 +2564,7 @@ module AuthorizeNet::API
   class IsAliveResponse
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -2540,7 +2595,7 @@ module AuthorizeNet::API
   class AuthenticateTestResponse
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -2556,9 +2611,9 @@ module AuthorizeNet::API
   #   subscription - ARBSubscriptionType
   class ARBCreateSubscriptionRequest
     include ROXML
-    xml_accessor :merchantAuthentication
+    xml_accessor :merchantAuthentication, :as => MerchantAuthenticationType
     xml_accessor :refId
-    xml_accessor :subscription
+    xml_accessor :subscription, :as => ARBSubscriptionType
   
     def initialize(merchantAuthentication = nil, refId = nil, subscription = nil)
       @merchantAuthentication = merchantAuthentication
@@ -2575,7 +2630,7 @@ module AuthorizeNet::API
   class ARBCreateSubscriptionResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :subscriptionId
   
@@ -2597,7 +2652,7 @@ module AuthorizeNet::API
     xml_accessor :merchantAuthentication
     xml_accessor :refId
     xml_accessor :subscriptionId
-    xml_accessor :subscription
+    xml_accessor :subscription, :as => ARBSubscriptionType
   
     def initialize(merchantAuthentication = nil, refId = nil, subscriptionId = nil, subscription = nil)
       @merchantAuthentication = merchantAuthentication
@@ -2614,7 +2669,7 @@ module AuthorizeNet::API
   class ARBUpdateSubscriptionResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -2648,7 +2703,7 @@ module AuthorizeNet::API
   class ARBCancelSubscriptionResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -2683,7 +2738,7 @@ module AuthorizeNet::API
   class ARBGetSubscriptionStatusResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :status
   
@@ -2700,11 +2755,11 @@ module AuthorizeNet::API
   #   refId - SOAP::SOAPString
   #   profile - CustomerProfileType
   #   validationMode - ValidationModeEnum
-  class CreateCustomerProfileRequest 
+  class CreateCustomerProfileRequest
     include ROXML
-    xml_accessor :merchantAuthentication
+    xml_accessor :merchantAuthentication, :as => MerchantAuthenticationType
     xml_accessor :refId
-    xml_accessor :profile
+    xml_accessor :profile, :as => CustomerProfileType
     xml_accessor :validationMode
   
     def initialize(merchantAuthentication = nil, refId = nil, profile = nil, validationMode = nil)
@@ -2726,7 +2781,7 @@ module AuthorizeNet::API
   class CreateCustomerProfileResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :customerProfileId
     xml_accessor :customerPaymentProfileIdList
@@ -2776,7 +2831,7 @@ module AuthorizeNet::API
   class CreateCustomerPaymentProfileResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :customerPaymentProfileId
     xml_accessor :validationDirectResponse
@@ -2818,7 +2873,7 @@ module AuthorizeNet::API
   class CreateCustomerShippingAddressResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :customerAddressId
   
@@ -2872,9 +2927,9 @@ module AuthorizeNet::API
   class GetCustomerProfileResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
-    xml_accessor :profile
+    xml_accessor :profile, :as => CustomerProfileMaskedType
   
     def initialize(refId = nil, messages = nil, sessionToken = nil, profile = nil)
       @refId = refId
@@ -2912,7 +2967,7 @@ module AuthorizeNet::API
   class GetCustomerPaymentProfileResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :paymentProfile
   
@@ -2952,7 +3007,7 @@ module AuthorizeNet::API
   class GetCustomerShippingAddressResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :address
   
@@ -2972,7 +3027,7 @@ module AuthorizeNet::API
     include ROXML
     xml_accessor :merchantAuthentication
     xml_accessor :refId
-    xml_accessor :profile
+    xml_accessor :profile, :as => CustomerProfileExType
   
     def initialize(merchantAuthentication = nil, refId = nil, profile = nil)
       @merchantAuthentication = merchantAuthentication
@@ -2988,7 +3043,7 @@ module AuthorizeNet::API
   class UpdateCustomerProfileResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -3029,7 +3084,7 @@ module AuthorizeNet::API
   class UpdateCustomerPaymentProfileResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :validationDirectResponse
   
@@ -3068,7 +3123,7 @@ module AuthorizeNet::API
   class UpdateCustomerShippingAddressResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -3139,7 +3194,7 @@ module AuthorizeNet::API
   class DeleteCustomerPaymentProfileResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -3176,7 +3231,7 @@ module AuthorizeNet::API
   class DeleteCustomerShippingAddressResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -3215,7 +3270,7 @@ module AuthorizeNet::API
   class CreateCustomerProfileTransactionResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :transactionResponse
     xml_accessor :directResponse
@@ -3266,7 +3321,7 @@ module AuthorizeNet::API
   class ValidateCustomerPaymentProfileResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :directResponse
   
@@ -3300,9 +3355,9 @@ module AuthorizeNet::API
   class GetCustomerProfileIdsResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
-    xml_accessor :ids
+    xml_accessor :ids, :as => NumericStringsType
   
     def initialize(refId = nil, messages = nil, sessionToken = nil, ids = nil)
       @refId = refId
@@ -3339,7 +3394,7 @@ module AuthorizeNet::API
   class UpdateSplitTenderGroupResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -3374,7 +3429,7 @@ module AuthorizeNet::API
   class GetTransactionDetailsResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :transaction
   
@@ -3386,45 +3441,7 @@ module AuthorizeNet::API
     end
   end
   
-  # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}createFingerPrintRequest
-  #   merchantAuthentication - MerchantAuthenticationType
-  #   refId - SOAP::SOAPString
-  #   supportInformation - FingerPrintSupportInformationType
-  class CreateFingerPrintRequest 
-    include ROXML
-    xml_accessor :merchantAuthentication
-    xml_accessor :refId
-    xml_accessor :supportInformation
-  
-    def initialize(merchantAuthentication = nil, refId = nil, supportInformation = nil)
-      @merchantAuthentication = merchantAuthentication
-      @refId = refId
-      @supportInformation = supportInformation
-    end
-  end
-  
-  # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}createFingerPrintResponse
-  #   refId - SOAP::SOAPString
-  #   messages - MessagesType
-  #   sessionToken - SOAP::SOAPString
-  #   fingerPrint - FingerPrintType
-  #   supportInformation - FingerPrintSupportInformationType
-  class CreateFingerPrintResponse 
-    include ROXML
-    xml_accessor :refId
-    xml_accessor :messages
-    xml_accessor :sessionToken
-    xml_accessor :fingerPrint
-    xml_accessor :supportInformation
-  
-    def initialize(refId = nil, messages = nil, sessionToken = nil, fingerPrint = nil, supportInformation = nil)
-      @refId = refId
-      @messages = messages
-      @sessionToken = sessionToken
-      @fingerPrint = fingerPrint
-      @supportInformation = supportInformation
-    end
-  end
+ 
    
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}getBatchStatisticsRequest
   #   merchantAuthentication - MerchantAuthenticationType
@@ -3451,7 +3468,7 @@ module AuthorizeNet::API
   class GetBatchStatisticsResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :batch
   
@@ -3494,7 +3511,7 @@ module AuthorizeNet::API
   class GetSettledBatchListResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :batchList
   
@@ -3531,7 +3548,7 @@ module AuthorizeNet::API
   class GetTransactionListResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :transactions
   
@@ -3571,7 +3588,7 @@ module AuthorizeNet::API
   class GetHostedProfilePageResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :token
   
@@ -3605,7 +3622,7 @@ module AuthorizeNet::API
   class GetUnsettledTransactionListResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :transactions
   
@@ -3641,7 +3658,7 @@ module AuthorizeNet::API
   class MobileDeviceRegistrationResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -3675,7 +3692,7 @@ module AuthorizeNet::API
   class MobileDeviceLoginResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :merchantContact
     xml_accessor :userPermissions
@@ -3712,7 +3729,7 @@ module AuthorizeNet::API
   class LogoutResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -3752,7 +3769,7 @@ module AuthorizeNet::API
   class SendCustomerTransactionReceiptResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
   
     def initialize(refId = nil, messages = nil, sessionToken = nil)
@@ -3773,8 +3790,8 @@ module AuthorizeNet::API
     xml_accessor :merchantAuthentication
     xml_accessor :refId
     xml_accessor :searchType
-    xml_accessor :sorting
-    xml_accessor :paging
+    xml_accessor :sorting, :as => ARBGetSubscriptionListSorting
+    xml_accessor :paging, :as => Paging
   
     def initialize(merchantAuthentication = nil, refId = nil, searchType = nil, sorting = nil, paging = nil)
       @merchantAuthentication = merchantAuthentication
@@ -3794,7 +3811,7 @@ module AuthorizeNet::API
   class ARBGetSubscriptionListResponse 
     include ROXML
     xml_accessor :refId
-    xml_accessor :messages
+    xml_accessor :messages, :as => MessagesType
     xml_accessor :sessionToken
     xml_accessor :totalNumInResultSet
     xml_accessor :subscriptionDetails
@@ -3807,6 +3824,55 @@ module AuthorizeNet::API
       @subscriptionDetails = subscriptionDetails
     end
   end
+
+# {AnetApi/xml/v1/schema/AnetApiSchema.xsd}decryptPaymentDataRequest
+#   merchantAuthentication - MerchantAuthenticationType
+#   refId - SOAP::SOAPString
+#   opaqueData - OpaqueDataType
+#   callId - SOAP::SOAPString
+class DecryptPaymentDataRequest
+  include ROXML
+  xml_accessor :merchantAuthentication
+  xml_accessor :refId
+  xml_accessor :opaqueData, :as => OpaqueDataType
+  xml_accessor :callId
+
+  def initialize(merchantAuthentication = nil, refId = nil, opaqueData = nil, callId = nil)
+    @merchantAuthentication = merchantAuthentication
+    @refId = refId
+    @opaqueData = opaqueData
+    @callId = callId
+  end
+end
+
+# {AnetApi/xml/v1/schema/AnetApiSchema.xsd}decryptPaymentDataResponse
+#   refId - SOAP::SOAPString
+#   messages - MessagesType
+#   sessionToken - SOAP::SOAPString
+#   shippingInfo - CustomerAddressType
+#   billingInfo - CustomerAddressType
+#   cardInfo - CreditCardMaskedType
+#   paymentDetails - PaymentDetails
+class DecryptPaymentDataResponse
+  include ROXML
+  xml_accessor :refId
+  xml_accessor :messages, :as => MessagesType
+  xml_accessor :sessionToken
+  xml_accessor :shippingInfo, :as => CustomerAddressType
+  xml_accessor :billingInfo, :as => CustomerAddressType
+  xml_accessor :cardInfo, :as => CreditCardMaskedType
+  xml_accessor :paymentDetails, :as => PaymentDetails
+
+  def initialize(refId = nil, messages = nil, sessionToken = nil, shippingInfo = nil, billingInfo = nil, cardInfo = nil, paymentDetails = nil)
+    @refId = refId
+    @messages = messages
+    @sessionToken = sessionToken
+    @shippingInfo = shippingInfo
+    @billingInfo = billingInfo
+    @cardInfo = cardInfo
+    @paymentDetails = paymentDetails
+  end
+end
   
   # {AnetApi/xml/v1/schema/AnetApiSchema.xsd}EnumCollection
   #   customerProfileSummaryType - CustomerProfileSummaryType
@@ -3853,6 +3919,7 @@ module AuthorizeNet::API
   #   payment - PaymentType
   #   profile - CustomerProfilePaymentType
   #   solution - SolutionType
+  #   callId - SOAP::SOAPString
   #   authCode - SOAP::SOAPString
   #   refTransId - SOAP::SOAPString
   #   splitTenderId - SOAP::SOAPString
@@ -3879,6 +3946,7 @@ module AuthorizeNet::API
     xml_accessor :payment, :as => PaymentType
     xml_accessor :profile, :as => CustomerProfilePaymentType
     xml_accessor :solution, :as => SolutionType
+    xml_accessor :callId
     xml_accessor :authCode
     xml_accessor :refTransId
     xml_accessor :splitTenderId
@@ -3898,13 +3966,14 @@ module AuthorizeNet::API
     xml_accessor :transactionSettings, :as => Settings
     xml_accessor :userFields, :as => UserFields
   
-    def initialize(transactionType = nil, amount = nil, currencyCode = nil, payment = nil, profile = nil, solution = nil, authCode = nil, refTransId = nil, splitTenderId = nil, order = nil, lineItems = nil, tax = nil, duty = nil, shipping = nil, taxExempt = nil, poNumber = nil, customer = nil, billTo = nil, shipTo = nil, customerIP = nil, cardholderAuthentication = nil, retail = nil, transactionSettings = nil, userFields = nil)
+    def initialize(transactionType = nil, amount = nil, currencyCode = nil, payment = nil, profile = nil, solution = nil, callId = nil, authCode = nil, refTransId = nil, splitTenderId = nil, order = nil, lineItems = nil, tax = nil, duty = nil, shipping = nil, taxExempt = nil, poNumber = nil, customer = nil, billTo = nil, shipTo = nil, customerIP = nil, cardholderAuthentication = nil, retail = nil, transactionSettings = nil, userFields = nil)
       @transactionType = transactionType
       @amount = amount
       @currencyCode = currencyCode
       @payment = payment
       @profile = profile
       @solution = solution
+      @callId = callId
       @authCode = authCode
       @refTransId = refTransId
       @splitTenderId = splitTenderId

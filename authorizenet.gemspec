@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name = "authorizenet"
-  s.version = "1.8.3"
+  s.version = "1.8.5.1"
   s.platform = Gem::Platform::RUBY
-  s.date = "2014-12-11"
+  s.date = "2015-08-11"
   s.summary = "Authorize.Net Payments SDK"
   s.description = "Authorize.Net SDK includes standard payments, recurring billing, and customer profiles"
   s.authors = ["Authorize.Net"]
@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version     = '>= 1.9.3'
   s.required_rubygems_version = '>= 1.3.6'
 
-  s.add_runtime_dependency "nokogiri", ">= 1.6.4", "< 1.6.5"
+  s.add_runtime_dependency 'nokogiri', '~> 1.6', '>= 1.6.4'
   s.add_runtime_dependency "roxml", "= 3.3.1"
 
   s.add_development_dependency 'rake', '~> 0.8', '>= 0.8.7'

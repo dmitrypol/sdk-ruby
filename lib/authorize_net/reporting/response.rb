@@ -61,7 +61,7 @@ module AuthorizeNet::Reporting
                 pay_num = node_content_unless_nil(child.at_css('subscription').at_css('payNum'))
                 transaction.subscription_paynum = pay_num unless pay_num.nil?
             end
-            
+        
             transactions <<= transaction
           end
         end
